@@ -21,3 +21,8 @@ def criar_tag():
         "NUM": 270,
         "WHILE": 275
     }
+
+# Exemplo de uso:
+# tags = criar_tag()
+# print(tags["AND"])  # Saída: 256
+# print(tags["IF"])   # Saída: 265
