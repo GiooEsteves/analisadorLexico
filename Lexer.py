@@ -1,46 +1,37 @@
-import io
-from typing import Dict
 import Word
 import Real
 import Num
 import Token
 import Tag
-import symbols
 import sys
 
-class Lexer:
-    line = 1
-    peek = ''
-    words: Dict[str, symbols.Word] = {}
-
-    def reserve(self, w: symbols.Word):
-        self.words[w.lexeme] = w
-
-    def __init__(self):
-        self.reserve(symbols.Word("if", symbols.Tag.IF))
-        self.reserve(symbols.Word("else", symbols.Tag.ELSE))
-        self.reserve(symbols.Word("while", symbols.Tag.WHILE))
-        self.reserve(symbols.Word("do", symbols.Tag.DO))
-        self.reserve(symbols.Word("break", symbols.Tag.BREAK))
-        self.reserve(symbols.Word.True_)
-        self.reserve(symbols.Word.False_)
-        self.reserve(symbols.Word.Int_)
-        self.reserve(symbols.Word.Char_)
-        self.reserve(symbols.Word.Bool_)
-        self.reserve(symbols.Word.Float_)
+words = {
+    "if": Word.Word("if", Tag.Tag.IF),
+    "else": Word.Word("else", Tag.Tag.ELSE),
+    "while": Word.Word("while", Tag.Tag.WHILE),
+    "do": Word.Word("do", Tag.Tag.DO),
+    "break": Word.Word("break", Tag.Tag.BREAK),
+    "True": Word.True_,
+    "False": Word.False_,
+    "int": Word.Word("int", Tag.Tag.INT),
+    "char": Word.Word("char", Tag.Tag.CHAR),
+    "bool": Word.Word("bool", Tag.Tag.BOOL),
+    "float": Word.Word("float", Tag.Tag.FLOAT)
+}
 
 def readch():
-    global peek
+    global peek 
     peek = sys.stdin.read(1)
+    return peek
 
-def readch(c):
+def readch_if(c):
     readch()
     if peek != c:
         return False
-    peek = ''
-    return True
+    else: 
+        return True
 
-def scan():
+def skip_whitespace():
     while True:
         readch()
         if peek == '' or peek == '\t':
@@ -50,68 +41,71 @@ def scan():
         else:
             break
 
-    if peek == '&':
-        if readch('&'):
-            return Word.and_
-        else:
-            return Token('&')
-    elif peek == '|':
-        if readch('|'):
-            return Word.or_
-        else:
-            return Token('|')
-    elif peek == '=':
-        if readch('='):
-            return Word.eq
-        else:
-            return Token('=')
-    elif peek == '!':
-        if readch('!'):
-            return Word.ne
-        else:
-            return Token('!')
-    elif peek == '<':
-        if readch('<'):
-            return Word.le
-        else:
-            return Token('<')
-    elif peek == '>':
-        if readch('>'):
-            return Word.ge
-        else:
-            return Token('>')
+def scan():
+    while True:
+        skip_whitespace()
 
-    if peek.isdigit():
-        v = 0
-        while peek.isdigit():
-            v = 10 * v + int(peek)
-            readch()
-        if peek != '.':
-            return Num(v)
-        x = float(v)
-        d = 10.0
-        while True:
-            readch()
-            if not peek.isdigit():
-                break
-            x = x + int(peek) / d
-            d *= 10.0
-        return Real(x)
+        if peek == '&':
+            if readch_if('&'):
+                return words.get("&&", Token.Token('&'))
+            else:
+                return Token.Token('&')
+        elif peek == '|':
+            if readch_if('|'):
+                return words.get("||", Token.Token('|'))
+            else:
+                return Token.Token('|')
+        elif peek == '=':
+            if readch_if('='):
+                return words.get("==", Token.Token('='))
+            else:
+                return Token.Token('=')
+        elif peek == '!':
+            if readch_if('!'):
+                return words.get("!=", Token.Token('!'))
+            else:
+                return Token.Token('!')
+        elif peek == '<':
+            if readch_if('<'):
+                return words.get("<=", Token.Token('<'))
+            else:
+                return Token.Token('<')
+        elif peek == '>':
+            if readch_if('>'):
+                return words.get(">=", Token.Token('>'))
+            else:
+                return Token.Token('>')
 
-    if peek.isalpha():
-        b = ''
-        while peek.isalnum():
-            b += peek
-            readch()
+        if peek.isdigit():
+            v = 0
+            while peek.isdigit():
+                v = 10 * v + int(peek)
+                readch()
+            if peek != '.':
+                return Num.Num(v)
+            x = float(v)
+            d = 10.0
+            while True:
+                readch()
+                if not peek.isdigit():
+                    break
+                x = x + int(peek) / d
+                d *= 10.0
+            return Real.Real(x)
 
-        s = b
-        w = Word.get(s)
-        if w is not None:
+        if peek.isalpha():
+            s = ''
+            while peek.isalnum():
+                s += peek
+                readch()
+
+            w = words.get(s)
+            if w is not None:
+                return w
+            w = Word.Word(s, Tag.Tag.ID)
+            words[s] = w
             return w
-        w = Word(s, Tag.ID)
-        Word[s] = w
-        return w
 
-    tok = Token(peek)
-    peek = ''
-    return tok
+        tok = Token.Token(peek)
+        readch()
+        return tok

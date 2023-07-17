@@ -1,4 +1,4 @@
-def criar_tag():
+def tags():
     return {
         "AND": 256,
         "EQ": 261,
@@ -21,5 +21,3 @@ def criar_tag():
         "NUM": 270,
         "WHILE": 275
     }
-
-tags = criar_tag()
