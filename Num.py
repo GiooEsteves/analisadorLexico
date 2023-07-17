@@ -1,10 +1,10 @@
-import Token
-import Tag
+from Token import criar_token
+from Tag import tags
 
-class Num(Token):
-    def __init__(self, v):
-        super().__init__(Tag.NUM)
-        self.value = v
+def criar_num(v):
+    num = criar_token(tags["NUM"])
+    num["value"] = v
+    return num
 
-    def __str__(self):
-        return "" + str(self.value)
+def num_to_str(num):
+    return "" + str(num["value"])

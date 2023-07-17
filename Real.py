@@ -1,10 +1,10 @@
-import Token 
-import Tag
+from Token import criar_token
+from Tag import tags
 
-class Real(Token):
-    def __init__(self, v):
-        super().__init__(Tag.REAL)
-        self.value = v
+def criar_real(v):
+    real = criar_token(tags["REAL"])
+    real["value"] = v
+    return real
 
-    def __str__(self):
-        return str(self.value)
+def real_to_str(real):
+    return str(real["value"])

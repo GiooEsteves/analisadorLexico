@@ -1,21 +1,21 @@
-import Token
-import Tag
+from Token import criar_token
+from Tag import tags
 
-class Word(Token):
-    def __init__(self, s, tag):
-        super().__init__(tag)
-        self.lexeme = s
+def criar_word(s, tag):
+    word = criar_token(tag)
+    word["lexeme"] = s
+    return word
 
-    def __str__(self):
-        return self.lexeme
+def word_to_str(word):
+    return word["lexeme"]
 
-and_ = Word("&&", Tag.AND)
-or_ = Word("||", Tag.OR)
-eq = Word("==", Tag.EQ)
-ne = Word("!=", Tag.NE)
-le = Word("<=", Tag.LE)
-ge = Word(">=", Tag.GE)
-minus = Word("minus", Tag.MINUS)
-True_ = Word("true", Tag.TRUE)
-False_ = Word("false", Tag.FALSE)
-temp = Word("t", Tag.TEMP)
+and_ = criar_word("&&", tags["AND"])
+or_ = criar_word("||", tags["OR"])
+eq = criar_word("==", tags["EQ"])
+ne = criar_word("!=", tags["NE"])
+le = criar_word("<=", tags["LE"])
+ge = criar_word(">=", tags["GE"])
+minus = criar_word("minus", tags["MINUS"])
+True_ = criar_word("true", tags["TRUE"])
+False_ = criar_word("false", tags["FALSE"])
+temp = criar_word("t", tags["TEMP"])
