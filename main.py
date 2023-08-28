@@ -23,7 +23,8 @@ def scan(lexema):
                 token.append(input_code[i])
                 lexema = ''
 
-            if i + 1 < len(input_code) and input_code[i] in onlyoperators and input_code[i + 1] not in onlyoperators and input_code[i - 1] not in onlyoperators:
+            if (i + 1 < len(input_code) and input_code[i] in onlyoperators and input_code[i + 1] not in onlyoperators
+                and input_code[i - 1] not in onlyoperators):
                 token.append(input_code[i])
                 lexema = ''
 

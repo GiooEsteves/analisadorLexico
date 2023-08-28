@@ -1,4 +1,5 @@
-tags = {'int': {'tag': 257, 'lexeme': 'int', 'width': 4},
+tags = {
+        'int': {'tag': 257, 'lexeme': 'int', 'width': 4},
         'float': {'tag': 257, 'lexeme': 'float', 'width': 8},
         'char': {'tag': 257, 'lexeme': 'char', 'width': 1},
         'bool': {'tag': 257, 'lexeme': 'bool', 'width': 1},
