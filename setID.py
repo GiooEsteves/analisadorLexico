@@ -3,7 +3,10 @@ from symbols import *
 
 def setID(token):
     if token in symbols:
-        return "Token: " + "{" + f"'tag': {tags['letters']['tag']}, 'lexeme': '{token}'" + "}"
+        if token in [';', '}']:
+            return "Token: " + "{" + f"'tag': '{token}' " + "}"
+        else:
+            return "Token: " + "{" + f"'tag': {tags['letters']['tag']}, 'lexeme': '{token}'" + "}"
     if token in onlyoperators and token != "=" and token != "<" and token != ">":
         return "Token: " + "{" + f"'tag': {tags['onlyoperators']['tag']}, 'lexeme': '{token}'" + "}"
     if token in multioperators:

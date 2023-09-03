@@ -49,5 +49,6 @@ def show(token):
             file_output.write(output + "\n")
 
 
+
 scan(lexema)
 show(token)

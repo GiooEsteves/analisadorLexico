@@ -10,90 +10,76 @@ with open("output.txt", "r") as arquivo:
         if linha.strip():
             tokens.append(pega_linha(linha))
 
+saida = open("saida.txt", "w")
+
+
 def match(tag_esperada):
     global token_atual
     if token_atual['tag'] == tag_esperada:
-        token_atual = tokens.pop(0)
+        if not tokens:
+            return
+        else: 
+            token_atual = tokens.pop(0)
     else:
         print(f"Erro de sintaxe: esperado tag:'{tag_esperada}', encontrado tag:'{token_atual['tag']}'")
 
+
 def estrutura_basica():
     global token_atual
-    print("estrutura basica")
     if token_atual['lexeme'] == '{':
-        match(264)
+        match(264)  # '{'
         confirmacao()
-    if token_atual['tag'] == 264 and token_atual['lexeme'] == '}':
-        match(264)
-            
+    if token_atual['tag'] == '}':
+        match('}')  # '}'
+
+
 def cochetes():
-    coch = []
+    coch = []   
     coch = token_atual['lexeme']
-    match(264)
-    if token_atual['tag'] == 264 and token_atual['lexeme'] in letters:
-        coch = coch + token_atual['lexeme']
-        match(264)
+    match(264)   # '['
     if token_atual['tag'] == 270:   #numero 
         coch = coch + token_atual['value']
         match(270)
-        if token_atual['tag'] == 264:   # ']'
-            coch = coch + token_atual['lexeme']
-            match(264)
-            return coch
     elif token_atual['tag'] == 264 and token_atual['lexeme'] in letters:     # variavel
         coch = coch + token_atual['lexeme']
-        match(264)
-        if token_atual['tag'] == 264:   # ']'
-            coch = coch + token_atual['lexeme']
-            match(264)
-            
-            return coch
+        match(264)  # variavel
+    if token_atual['tag'] == 264 and token_atual['lexeme'] == ']':   # ']'
+        coch = coch + token_atual['lexeme']
+        match(264)  # ']'
+    if token_atual['tag'] == ';':
+        match(';')  # ';'
+    return coch
+
 
 def confirmacao():
     tag_numbers = [value['tag'] for value in tags.values()]
-    '''print(token_atual['tag'])
-    print(token_atual['lexeme'])'''
-    
     while token_atual['tag'] in tag_numbers:
         if token_atual['tag'] == 257:  # tipo
             declaracao()
         elif token_atual['tag'] == 264 and token_atual['lexeme'] == '{':  # '{'
             estrutura_basica()
         elif token_atual['tag'] == 275:  # 'while'
-            print("WHILE")
             estrutura_while()
             return
         elif token_atual['tag'] == 265:  # 'if'
-            #estrutura_if()
-            print("IF")
+            estrutura_if()
+            return
         elif token_atual['tag'] == 259:  # 'do'
-            print("DO")
             estrutura_do_while()
             return
         elif token_atual['tag'] == 258:  # 'break'
             match(258)  
             return
         elif token_atual['tag'] == 264 and token_atual['lexeme'] in letters:  # variavel
-            #expressao()
-            print("EXPRESSÃO")
+            expressao()
             return
-        elif token_atual['tag'] == 270:
-            #expressao()
-            print("EXPRESSÃO")
-            return
-        elif token_atual['tag'] in [263, '=', '>', '<']:
-            #expressao()
-            print("EXPRESSÃO")
-            return
-        elif token_atual['tag'] == 264 and token_atual['lexeme'] in ['+', '-', ';', ')']:
-            #expressao()
-            print("EXPRESSÃO")
-            return
-        elif token_atual['tag'] == 264 and token_atual['lexeme'] == '}':
+        elif token_atual['tag'] == '}':
             estrutura_basica()
+        elif token_atual['tag'] == '=':
+            antes = exp
+            atribuicao(antes)
+            return
         else:
-            print("Erro aqui")
-            print(token_atual)
             print(f"Erro de sintaxe: token inesperado '{token_atual['tag']}'")
             return
 
@@ -115,11 +101,12 @@ def declaracao():
             var = token_atual['lexeme']
             match(264)  # variavel
 
-        if token_atual['tag'] == 264 and token_atual['lexeme'] == ';':
-            match(264)  # ';'
+        if token_atual['tag'] == ';':
+            match(';')  # ';'
 
             labels[line_number] = f"L{current_label}"
-            print(f"{labels[line_number]}: {tipo} - {var}")
+            saida.write(f"{labels[line_number]}: {tipo} - {var}")
+            saida.write("\n")
             current_label += 1
             line_number += 1
             return
@@ -131,6 +118,7 @@ def estrutura_while():
     global line_number
     global current_label
     global labels
+    global varGT
     
     match(275)  # 'while'
     if token_atual['tag'] == 264 and token_atual['lexeme'] == '(':
@@ -141,13 +129,35 @@ def estrutura_while():
                 match(264)  # ')'
             if token_atual['tag'] == 264 and token_atual['lexeme'] == '{':
                 estrutura_basica()
-                labels[line_number] = f"L{current_label}"
-                print(f"{labels[line_number]}:{resultado_condicao}")
-                current_label += 1
-                line_number += 1
-                return 
+                confirmacao()
+                if varGT != 0:
+                    labels[line_number] = f"L{current_label}"
+                    saida.write(f"{labels[line_number]}: while {resultado_condicao} goto L{varGT}")
+                    saida.write("\n")
+                    current_label += 1
+                    line_number += 1
+                
         elif resultado_condicao == False:
             exit(1)
+        else: 
+            if token_atual['tag'] == 264 and token_atual['lexeme'] == ')':
+                match(264)  # ')'
+                if token_atual['tag'] == ';':
+                    match(';')  # ';'
+                if varGT != 0:
+                    labels[line_number] = f"L{current_label}"
+                    saida.write(f"{labels[line_number]}: while {resultado_condicao} goto L{varGT}")
+                    saida.write("\n")
+                    current_label += 1
+                    line_number += 1
+                else:
+                    labels[line_number] = f"L{current_label}"
+                    saida.write(f"{labels[line_number]}: while {resultado_condicao}")
+                    saida.write("\n")
+                    current_label += 1
+                    line_number += 1
+                confirmacao()
+                
 
 def estrutura_do_while():
     global line_number
@@ -158,31 +168,69 @@ def estrutura_do_while():
     if token_atual['tag'] == 264 and token_atual['lexeme'] == '{':
         estrutura_basica()
     else:
-        print("atribuição")
         expressao()
         
-    if token_atual['tag'] == 264 and token_atual['lexeme'] == ';':
-        match(264)  # ';'
-    
+    if token_atual['tag'] == ';':
+        match(';')  # ';'   
     if token_atual['tag'] == 275:
-        print("while")
         estrutura_while()
 
-# fazer a condição depois
+
+def estrutura_if():
+    global line_number
+    global current_label
+    global labels
+    global exp 
+    exp = []
+    global varGT 
+    match(265)  # 'if'
+
+    if token_atual['tag'] == 264:
+        match(264)  # '('
+        resultado_condicao =  expressao()
+
+    if token_atual['tag'] == 264 and token_atual['lexeme'] == ')':
+        match(264)  # ')'
+     
+    expression = expressao()
+    labels[line_number] = f"L{current_label}"
+    saida.write(f"{labels[line_number]}: {expression}")
+    saida.write("\n")
+    varGT = line_number
+    current_label += 1
+    line_number += 1
+
+    labels[line_number] = f"L{current_label}"
+    saida.write(f"{labels[line_number]}: if {resultado_condicao} goto L{varGT}")
+    saida.write("\n")
+    current_label += 1
+    line_number += 1
+
+    match(';')  # ';'
+         
+
 def expressao():
     global exp
-
-    while token_atual['tag'] not in ['<', '>', '=', 263, 274, 262]:
-        exp = []
-        exp = token_atual['lexeme']
+    exp = []
+    exp = token_atual['lexeme']
+    while token_atual['tag'] not in ['<', '>', '=', ';', 263, 274, 262, 258]:
+        
         if token_atual['tag'] == 264 and token_atual['lexeme'] == '[':  
             coch = cochetes()
-            #exp = exp + coch
-            print(exp)
-        match(token_atual['tag'])
-    
-    if token_atual['tag'] in ['<', '>', 263]:
-        comparacao()
+            exp = exp + coch
+        if token_atual['tag'] in ['<', '>']:
+            break
+        if token_atual['tag'] == ';':
+            break
+        else:
+            match(token_atual['tag'])
+        
+    if token_atual['tag'] in ['<', '>']:
+        resultado = comparacao()
+        return resultado
+    elif token_atual['tag'] == 263:
+        resultado = comparacao()
+        return resultado
     elif token_atual['tag'] == 274:
         match(274)
         return True
@@ -190,71 +238,90 @@ def expressao():
         match(262)  # 'false'
         return False
     elif token_atual['tag'] == '=':
-        atribuicao()
+        antes = exp
+        atribuicao(antes)
+        return
+    elif token_atual['tag'] == 258: # 'break'
+        match(258)
+        return exp
 
-# comparação
+
 def comparacao():
-    global exp
-    print(token_atual)
-    if token_atual['tag'] in ['<', '>']:
-        exp = exp + token_atual['tag']
-        print(exp)
-    match(token_atual['tag'])
-    print("expressao")
-    print(exp)
-    
-    '''if token_atual['lexeme'] == '<':
-        exp.clear()
-    elif token_atual['lexeme'] == '>':
-        exp.clear()'''
-
-def atribuicao():
     global line_number
     global current_label
     global labels
     global exp
-    '''recebe = exp
-    exp = [] '''    # esvaziar a lista
-    exp = exp + token_atual['tag']
-    match('=')
+
+    if token_atual['tag'] in ['<', '>']:
+        exp = exp + token_atual['tag']
+        match(token_atual['tag'])
+    elif token_atual['tag'] == 263:
+        exp = exp + token_atual['lexeme']
+        match(token_atual['tag'])
+
+    if token_atual['tag'] == 264:
+        if not exp:
+            exp = token_atual['lexeme']
+        else: 
+            exp = exp + token_atual['lexeme']
+        match(token_atual['tag'])
+    elif token_atual['tag'] == 263:
+        if not exp:
+            exp = token_atual['lexeme']
+        else: 
+            exp = exp + token_atual['lexeme']
+        match(token_atual['tag'])
+    return exp
+
+
+def atribuicao(antes):
+    global line_number
+    global current_label
+    global labels
+    global exp
+    exp = []
+    if not antes:
+        if token_atual['tag'] == 264 and token_atual['lexeme'] in letters:
+            exp = token_atual['lexeme']
+            
+        if token_atual['tag'] == '=':
+            exp = exp + token_atual['tag']
+            match('=')
+    else:
+        exp = antes + token_atual['tag']
+        match(token_atual['tag'])       
     
-    while True:
+    while token_atual['tag'] not in [';']:
         if token_atual['tag'] == 270:
             exp = exp + token_atual['value']
         if token_atual['tag'] == 264:
             if not exp:
                 exp = token_atual['lexeme']
-            elif token_atual['lexeme'] == ';':
-                print()
+            elif token_atual['tag'] == ';':
+                saida.write("")
             else: 
                 exp = exp + token_atual['lexeme']  
         
-        if token_atual['tag'] == 264 and token_atual['lexeme'] == ';':
-            break
-        else:
-            match(token_atual['tag'])
-        
-    '''for i in range(len(exp)):
-        if exp[i] == '+':
-            print("adição")
-            recebe = exp[i-1] + exp[i+1]
-            print(recebe)
-        elif exp[i] == '-':
-            print("subtração")
-            recebe = exp[i-1] - exp[i+1]
-            print(recebe)'''
-
-    '''elif exp[i] in letters:
-        print("variavel")
-        var = exp[i]'''
+        match(token_atual['tag'])
+    if token_atual['tag'] == ';':
+        match(';') 
     
-    
-    match(264)
     labels[line_number] = f"L{current_label}"
-    print(f"{labels[line_number]}:{exp}")
+    saida.write(f"{labels[line_number]}: {exp}")
+    saida.write("\n")
+    global varGT
+    varGT = 0
+    varGT = line_number
     current_label += 1
     line_number += 1
-    return
+
+    if token_atual['tag'] == 264 and token_atual['lexeme'] in letters:
+        antes = ""
+        global counter
+        while token_atual['tag'] != '=': 
+            antes = antes + token_atual['lexeme']
+            match(token_atual['tag'])
+        atribuicao(antes)
 
 
 def main(tokens):
@@ -264,26 +331,14 @@ def main(tokens):
     global line_number
 
     token_atual = tokens.pop(0)
-    print(token_atual)
 
     labels = {}
     current_label = 1
     line_number = 1
 
     if token_atual['tag'] == 264 and token_atual['lexeme'] == '{':
-        confirmacao()
-        if match(264) and token_atual['lexeme'] == '}':
-            print("'}' estrutura fechada")
-        else:
-            print("Erro de sintaxe: programa deve finalizar com '}'")
-    else:
-        print("Erro de sintaxe: programa deve iniciar com '{'")
+        estrutura_basica()
 
-
-########################################  INICIO  #############################################
-
-print("inicio análise sintática")
+''''''''''''''''''''''''''''''''' INICIO '''''''''''''''''''''''''''''''''  
 token_atual = None
 main(tokens)
-
-print("fim análise sintática")
