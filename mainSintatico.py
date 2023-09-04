@@ -301,7 +301,7 @@ def atribuicao(antes):
 
     if token_atual['tag'] == ';':
         match(';')
-    print(t)
+    
     labels[line_number] = f"L{current_label}"
     saida.write(f"{labels[line_number]}: t{t_number}{exp}")
     saida.write("\n")
@@ -319,9 +319,6 @@ def atribuicao(antes):
             antes = antes + token_atual['lexeme']
             match(token_atual['tag'])
         atribuicao(antes)
-
-
-
 
 def main(tokens):
     global token_atual   
