@@ -1,15 +1,10 @@
-L1: int - i
-L2: int - j
-L3: float - v
-L4: float - x
-L5: float[100] - a
-L6: i=i+1
-L7: while a[i]<v goto L6
-L8: j=j-1
-L9: while a[j]>v goto L8
-L10: break
-L11: if i>=j goto L10
-L12: x=a[i]
-L13: a[i]=a[j]
-L14: a[j]=x
-L15: while True goto L14
+L1: t1=i+1
+L2: while a[i]<v goto L1
+L3: t2=j-1
+L4: while a[j]>v goto L3
+L5: break
+L6: if i>=j goto L5
+L7: t3=a[i]
+L8: t4=a[j]
+L9: t5=x
+L10: while True goto L9

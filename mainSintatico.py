@@ -12,7 +12,6 @@ with open("output.txt", "r") as arquivo:
 
 saida = open("saida.txt", "w")
 
-
 def match(tag_esperada):
     global token_atual
     if token_atual['tag'] == tag_esperada:
@@ -74,11 +73,7 @@ def confirmacao():
             expressao()
             return
         elif token_atual['tag'] == '}':
-            estrutura_basica()
-        elif token_atual['tag'] == '=':
-            antes = exp
-            atribuicao(antes)
-            return
+            estrutura_basica() 
         else:
             print(f"Erro de sintaxe: token inesperado '{token_atual['tag']}'")
             return
@@ -103,12 +98,6 @@ def declaracao():
 
         if token_atual['tag'] == ';':
             match(';')  # ';'
-
-            labels[line_number] = f"L{current_label}"
-            saida.write(f"{labels[line_number]}: {tipo} - {var}")
-            saida.write("\n")
-            current_label += 1
-            line_number += 1
             return
         else:
             print("Erro de sintaxe: esperado ';' ao final")
@@ -250,6 +239,8 @@ def comparacao():
     global line_number
     global current_label
     global labels
+    global t
+    global t_number
     global exp
 
     if token_atual['tag'] in ['<', '>']:
@@ -278,19 +269,23 @@ def atribuicao(antes):
     global line_number
     global current_label
     global labels
+    global t
+    global t_number
     global exp
     exp = []
+
     if not antes:
         if token_atual['tag'] == 264 and token_atual['lexeme'] in letters:
             exp = token_atual['lexeme']
-            
+
         if token_atual['tag'] == '=':
             exp = exp + token_atual['tag']
             match('=')
     else:
-        exp = antes + token_atual['tag']
-        match(token_atual['tag'])       
-    
+        t.append(antes)
+        exp = token_atual['tag']
+        match(token_atual['tag'])
+
     while token_atual['tag'] not in [';']:
         if token_atual['tag'] == 270:
             exp = exp + token_atual['value']
@@ -299,29 +294,33 @@ def atribuicao(antes):
                 exp = token_atual['lexeme']
             elif token_atual['tag'] == ';':
                 saida.write("")
-            else: 
-                exp = exp + token_atual['lexeme']  
-        
+            else:
+                exp = exp + token_atual['lexeme']
+
         match(token_atual['tag'])
+
     if token_atual['tag'] == ';':
-        match(';') 
-    
+        match(';')
+    print(t)
     labels[line_number] = f"L{current_label}"
-    saida.write(f"{labels[line_number]}: {exp}")
+    saida.write(f"{labels[line_number]}: t{t_number}{exp}")
     saida.write("\n")
     global varGT
     varGT = 0
     varGT = line_number
     current_label += 1
     line_number += 1
+    t_number += 1
 
     if token_atual['tag'] == 264 and token_atual['lexeme'] in letters:
         antes = ""
         global counter
-        while token_atual['tag'] != '=': 
+        while token_atual['tag'] != '=':
             antes = antes + token_atual['lexeme']
             match(token_atual['tag'])
         atribuicao(antes)
+
+
 
 
 def main(tokens):
@@ -329,12 +328,16 @@ def main(tokens):
     global labels
     global current_label
     global line_number
-
+    global t_number
+    global t
+    
     token_atual = tokens.pop(0)
 
     labels = {}
     current_label = 1
     line_number = 1
+    t = []
+    t_number = 1
 
     if token_atual['tag'] == 264 and token_atual['lexeme'] == '{':
         estrutura_basica()
